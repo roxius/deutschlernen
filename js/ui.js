@@ -25,12 +25,19 @@ const Quiz = (() => {
           </div>
           <div class="bar"><div class="bar-fill" style="width:${(state.i / n) * 100}%"></div></div>
           <div class="quiz-q">${q.question}${q.sub ? `<span class="quiz-sub">${esc(q.sub)}</span>` : ""}</div>
+          ${q.hint ? `<button class="hint-btn" id="hint-btn" type="button">💡 Dica</button>
+          <div class="quiz-hint" id="quiz-hint" hidden>${q.hint}</div>` : ""}
           <div class="quiz-opts">
             ${q.options.map((o, idx) => `<button class="opt" data-idx="${idx}">${esc(o)}</button>`).join("")}
           </div>
           <div class="quiz-feedback" id="qfb"></div>
         </section>`;
       host.querySelectorAll(".opt").forEach(btn => btn.addEventListener("click", () => answer(btn, q)));
+      const hb = host.querySelector("#hint-btn");
+      if (hb) hb.addEventListener("click", () => {
+        host.querySelector("#quiz-hint").hidden = false;
+        hb.hidden = true;
+      });
     }
 
     function answer(btn, q) {
@@ -46,8 +53,12 @@ const Quiz = (() => {
         if (b.textContent === q.answer) b.classList.add("is-correct");
         else if (b === btn) b.classList.add("is-wrong");
       });
+      // esconde o botão de dica após responder (a explicação já cobre)
+      const hb = host.querySelector("#hint-btn");
+      if (hb) hb.hidden = true;
       const fb = host.querySelector("#qfb");
       fb.innerHTML = `<div class="fb ${ok ? "fb-ok" : "fb-no"}">${ok ? "✓ Richtig!" : "✗ Falsch. Certo: <b>" + esc(q.answer) + "</b>"}</div>
+        ${q.explain ? `<div class="quiz-explain">💡 ${q.explain}</div>` : ""}
         <button class="btn btn-primary" id="next-q">${state.i + 1 >= state.questions.length ? "Ver resultado" : "Próxima →"}</button>`;
       host.querySelector("#next-q").addEventListener("click", () => { state.i++; state.answered = false; render(); });
     }

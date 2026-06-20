@@ -160,6 +160,17 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 .cta-primary .cta-eyebrow { color: rgba(255,255,255,.8); }
 .cta-alert { border-color: var(--gold); }
 
+/* ---- Treino: grade de tópicos ---- */
+.topic-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.topic-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px 16px; display: flex; flex-direction: column; gap: 4px; box-shadow: var(--shadow);
+  transition: transform .15s var(--ease), border-color .15s var(--ease), box-shadow .15s var(--ease); }
+.topic-card:active { transform: scale(.97); }
+@media (hover: hover) { .topic-card:hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 10px 26px rgba(70,70,130,.16); } }
+.topic-ico { font-size: 1.9rem; line-height: 1; }
+.topic-title { font-weight: 700; font-size: 1.05rem; }
+.topic-desc { color: var(--muted); font-size: .85rem; }
+
 /* ---- Trilha ---- */
 .part { margin-bottom: 22px; }
 .part-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }

@@ -4,8 +4,8 @@ const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;
 
 // ============================ QUIZ ============================
 const Quiz = (() => {
-  function mount(host, lessonId, label) {
-    const questions = window.Exercises.generate(lessonId, 8);
+  function mount(host, lessonId, label, topic = null) {
+    const questions = window.Exercises.generate(lessonId, 8, topic);
     if (!questions.length) {
       host.innerHTML = `<section class="card"><p class="muted">Não há exercícios disponíveis aqui ainda.</p></section>`;
       return;
@@ -74,7 +74,7 @@ const Quiz = (() => {
           <p class="muted">${msg} · +${state.correct * 5} XP</p>
           <button class="btn btn-primary" id="again">Jogar de novo</button>
         </section>`;
-      host.querySelector("#again").addEventListener("click", () => mount(host, lessonId, label));
+      host.querySelector("#again").addEventListener("click", () => mount(host, lessonId, label, topic));
     }
   }
 

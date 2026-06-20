@@ -183,19 +183,49 @@ const Exercises = (() => {
     };
   }
 
-  // Gera um conjunto de N questões variadas para uma lição (ou geral)
-  function generate(lessonId, n = 8) {
+  // Tópicos focados para a tela de Treino (e quiz misto)
+  const TOPICS = [
+    { key: "mixed",   icon: "🎲", label: "Quiz misto",   desc: "Tudo misturado" },
+    { key: "article", icon: "🔤", label: "Artigos",      desc: "der · die · das" },
+    { key: "trans",   icon: "🔄", label: "Tradução",     desc: "Alemão ⇄ português" },
+    { key: "conj",    icon: "🔧", label: "Conjugação",   desc: "Verbos no presente" },
+    { key: "dusie",   icon: "🤝", label: "du vs. Sie",   desc: "Formal ou informal" },
+    { key: "kasus",   icon: "📦", label: "Akk. / Dativ", desc: "Casos e preposições" },
+  ];
+  // Quais geradores cada tópico usa
+  const TOPIC_GENS = {
+    mixed:   ["article", "transDePt", "transPtDe", "conj", "dusie", "kasus"],
+    article: ["article"],
+    trans:   ["transDePt", "transPtDe"],
+    conj:    ["conj"],
+    dusie:   ["dusie"],
+    kasus:   ["kasus"],
+  };
+
+  // Gera um conjunto de N questões variadas para uma lição (ou geral).
+  // topic (opcional): chave de TOPIC_GENS para focar num tipo de exercício.
+  function generate(lessonId, n = 8, topic = null) {
     const pool = vocabPool(lessonId);
     const tables = conjPool(lessonId);
-    const generators = [
-      () => makeArticle(pool),
-      () => makeTransDePt(pool),
-      () => makeTransPtDe(pool),
-      () => makeConjugation(tables),
-    ];
-    // exercícios especiais sempre disponíveis no modo geral ou nas lições relevantes
-    if (!lessonId || lessonId === 1 || lessonId === 3) generators.push(makeDuSie);
-    if (!lessonId || lessonId === 7) generators.push(makeKasus);
+    const byKey = {
+      article: () => makeArticle(pool),
+      transDePt: () => makeTransDePt(pool),
+      transPtDe: () => makeTransPtDe(pool),
+      conj: () => makeConjugation(tables),
+      dusie: makeDuSie,
+      kasus: makeKasus,
+    };
+
+    let keys;
+    if (topic && TOPIC_GENS[topic]) {
+      keys = TOPIC_GENS[topic];
+    } else {
+      // Modo padrão (aba Exercícios da lição): misto, com especiais nas lições relevantes
+      keys = ["article", "transDePt", "transPtDe", "conj"];
+      if (!lessonId || lessonId === 1 || lessonId === 3) keys.push("dusie");
+      if (!lessonId || lessonId === 7) keys.push("kasus");
+    }
+    const generators = keys.map(k => byKey[k]);
 
     const out = [];
     let guard = 0;
@@ -215,7 +245,7 @@ const Exercises = (() => {
     }));
   }
 
-  return { generate, flashcards, vocabPool };
+  return { generate, flashcards, vocabPool, TOPICS };
 })();
 
 window.Exercises = Exercises;

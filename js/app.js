@@ -332,11 +332,33 @@ const App = (() => {
     speechSynthesis.speak(u);
   }
 
-  // ---------- Tela: Treino (quiz misto geral) ----------
-  function renderTreino() {
-    view().innerHTML = `<header class="page-head"><a class="back" href="#/">‹ Início</a><h1>🧠 Treino rápido</h1>
-      <p class="muted">Quiz misto com todo o conteúdo das 12 Lektionen.</p></header><div id="quiz-host"></div>`;
-    Quiz.mount($("#quiz-host"), null, "Quiz misto");
+  // ---------- Tela: Treino (escolha de tópico → quiz) ----------
+  function renderTreino(topic) {
+    const topics = window.Exercises.TOPICS;
+
+    // Sem tópico: mostra o seletor
+    if (!topic) {
+      view().innerHTML = `
+        <header class="page-head"><a class="back" href="#/">‹ Início</a><h1>🧠 Treino</h1>
+          <p class="muted">Escolha um tópico para focar — ou faça o quiz misto.</p></header>
+        <div class="topic-grid">
+          ${topics.map(t => `
+            <a class="topic-card" href="#/treino/${t.key}">
+              <span class="topic-ico">${t.icon}</span>
+              <span class="topic-title">${esc(t.label)}</span>
+              <span class="topic-desc">${esc(t.desc)}</span>
+            </a>`).join("")}
+        </div>`;
+      return;
+    }
+
+    // Com tópico: monta o quiz focado
+    const t = topics.find(x => x.key === topic) || topics[0];
+    view().innerHTML = `
+      <header class="page-head"><a class="back" href="#/treino">‹ Tópicos</a><h1>${t.icon} ${esc(t.label)}</h1>
+        <p class="muted">${esc(t.desc)}</p></header>
+      <div id="quiz-host"></div>`;
+    Quiz.mount($("#quiz-host"), null, t.label, t.key === "mixed" ? null : t.key);
   }
 
   // ---------- Tela: Revisão (SRS) ----------
@@ -463,7 +485,7 @@ const App = (() => {
     if (parts.length === 0) renderHome();
     else if (parts[0] === "trilha") renderTrack();
     else if (parts[0] === "licao") renderLesson(parseInt(parts[1], 10), parts[2] || "objetivos");
-    else if (parts[0] === "treino") renderTreino();
+    else if (parts[0] === "treino") renderTreino(parts[1] || null);
     else if (parts[0] === "revisao") renderRevisao();
     else if (parts[0] === "conquistas") renderConquistas();
     else if (parts[0] === "config") renderConfig();

@@ -1,5 +1,7 @@
-// sw.js — Service Worker: cache-first para uso offline (PWA).
-const CACHE = "deutschlernen-v1";
+// sw.js — Service Worker: stale-while-revalidate para uso offline (PWA).
+// Serve do cache imediatamente, mas revalida em segundo plano: assim o
+// usuário continua offline-first E recebe atualizações no próximo carregamento.
+const CACHE = "deutschlernen-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -30,15 +32,15 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(resp => {
-        if (resp.ok && e.request.url.startsWith(self.location.origin)) {
-          const copy = resp.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy));
-        }
-        return resp;
-      }).catch(() => cached);
-    })
+    caches.open(CACHE).then(cache =>
+      cache.match(e.request).then(cached => {
+        const network = fetch(e.request).then(resp => {
+          if (resp.ok && e.request.url.startsWith(self.location.origin)) cache.put(e.request, resp.clone());
+          return resp;
+        }).catch(() => cached);
+        // stale-while-revalidate: devolve o cache na hora e atualiza por trás
+        return cached || network;
+      })
+    )
   );
 });

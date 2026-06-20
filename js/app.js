@@ -1,0 +1,414 @@
+// app.js — Roteador por hash e renderização de todas as telas.
+
+const App = (() => {
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const view = () => document.getElementById("view");
+  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // ---------- Componentes reutilizáveis ----------
+  function progressBar(pct) {
+    return `<div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>`;
+  }
+
+  function lessonById(id) { return window.DATA.LESSONS.find(l => l.id === id); }
+
+  // ---------- Tela: Início ----------
+  function renderHome() {
+    const P = window.Progress;
+    const lvl = P.level();
+    const done = P.completedCount();
+    const total = window.DATA.LESSONS.length;
+    const overallPct = Math.round((done / total) * 100);
+    const due = window.SRS.dueCount();
+    const last = P.state.lastLessonId ? lessonById(P.state.lastLessonId) : null;
+    const greeting = (() => {
+      const h = new Date().getHours();
+      if (h < 10) return "Guten Morgen";
+      if (h < 18) return "Guten Tag";
+      return "Guten Abend";
+    })();
+
+    view().innerHTML = `
+      <header class="hero">
+        <p class="hero-greet">${greeting}! 👋</p>
+        <h1>Sua jornada no alemão</h1>
+        <p class="hero-sub">${esc(window.DATA.COURSE.title)} · ${window.DATA.COURSE.level}</p>
+      </header>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <span class="stat-icon">🔥</span>
+          <span class="stat-num">${P.state.streak}</span>
+          <span class="stat-lbl">dias seguidos</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">${lvl.icon}</span>
+          <span class="stat-num">${P.state.xp}</span>
+          <span class="stat-lbl">XP · ${esc(lvl.name)}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">📚</span>
+          <span class="stat-num">${done}/${total}</span>
+          <span class="stat-lbl">lições</span>
+        </div>
+      </div>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Nível ${esc(lvl.name)} ${lvl.icon}</h2>
+          ${lvl.next ? `<span class="muted">${lvl.toNext} XP p/ ${esc(lvl.next.name)}</span>` : `<span class="muted">Nível máximo!</span>`}
+        </div>
+        ${progressBar(lvl.pct)}
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Progresso geral</h2><span class="muted">${overallPct}%</span></div>
+        ${progressBar(overallPct)}
+      </section>
+
+      <div class="cta-grid">
+        ${last
+          ? `<a class="cta cta-primary" href="#/licao/${last.id}">
+               <span class="cta-eyebrow">Continuar</span>
+               <span class="cta-title">${last.icon} L${last.id} · ${esc(last.title)}</span>
+             </a>`
+          : `<a class="cta cta-primary" href="#/licao/1">
+               <span class="cta-eyebrow">Começar</span>
+               <span class="cta-title">👋 Lektion 1 · Hallo!</span>
+             </a>`}
+        <a class="cta ${due ? "cta-alert" : ""}" href="#/revisao">
+          <span class="cta-eyebrow">Revisão (SRS)</span>
+          <span class="cta-title">🔁 ${due ? due + " cards para revisar" : "Em dia ✓"}</span>
+        </a>
+        <a class="cta" href="#/treino">
+          <span class="cta-eyebrow">Treino rápido</span>
+          <span class="cta-title">🧠 Quiz misto</span>
+        </a>
+      </div>
+
+      <section class="card tips">
+        <h2>💡 Dica de estudo</h2>
+        <p>${esc(window.DATA.STUDY_TIPS[new Date().getDate() % window.DATA.STUDY_TIPS.length])}</p>
+      </section>
+    `;
+  }
+
+  // ---------- Tela: Trilha ----------
+  function renderTrack() {
+    const P = window.Progress;
+    const parts = window.DATA.COURSE.parts.map(part => {
+      const lessons = part.lessons.map(id => {
+        const l = lessonById(id);
+        const doneL = P.isLessonDone(id);
+        return `
+          <a class="lesson-row ${doneL ? "is-done" : ""}" href="#/licao/${id}">
+            <span class="lesson-ico">${l.icon}</span>
+            <span class="lesson-body">
+              <span class="lesson-title">L${id} · ${esc(l.title)}</span>
+              ${l.highlight ? `<span class="badge-hot">★ ${esc(l.highlight)}</span>` : ""}
+            </span>
+            <span class="lesson-state">${doneL ? "✓" : "›"}</span>
+          </a>`;
+      }).join("");
+      const partDone = part.lessons.filter(P.isLessonDone).length;
+      return `
+        <section class="part">
+          <div class="part-head">
+            <h2>${esc(part.title)}</h2>
+            <span class="muted">${esc(part.subtitle)} · ${partDone}/${part.lessons.length}</span>
+          </div>
+          ${progressBar(Math.round((partDone / part.lessons.length) * 100))}
+          <div class="lesson-list">${lessons}</div>
+        </section>`;
+    }).join("");
+
+    view().innerHTML = `<header class="page-head"><h1>Trilha de aprendizado</h1></header>${parts}`;
+  }
+
+  // ---------- Tela: Lição ----------
+  const TABS = [
+    { key: "objetivos", label: "Objetivos" },
+    { key: "frases", label: "Frases" },
+    { key: "gramatica", label: "Gramática" },
+    { key: "vocab", label: "Vocabulário" },
+    { key: "exercicios", label: "Exercícios" },
+  ];
+
+  function renderLesson(id, tab = "objetivos") {
+    const l = lessonById(id);
+    if (!l) return renderHome();
+    const P = window.Progress;
+    P.setLastLesson(id);
+    const done = P.isLessonDone(id);
+
+    const tabsHtml = TABS.map(t =>
+      `<button class="tab ${t.key === tab ? "is-active" : ""}" data-tab="${t.key}">${t.label}</button>`
+    ).join("");
+
+    view().innerHTML = `
+      <header class="lesson-hero">
+        <a class="back" href="#/trilha">‹ Trilha</a>
+        <div class="lesson-hero-main">
+          <span class="lesson-hero-ico">${l.icon}</span>
+          <div>
+            <p class="muted">Lektion ${l.id}</p>
+            <h1>${esc(l.title)}</h1>
+          </div>
+        </div>
+        ${l.highlight ? `<span class="badge-hot">★ ${esc(l.highlight)}</span>` : ""}
+      </header>
+      <nav class="tabs">${tabsHtml}</nav>
+      <div id="tab-content"></div>
+      <div class="lesson-footer">
+        <button id="toggle-done" class="btn ${done ? "btn-done" : "btn-primary"}">
+          ${done ? "✓ Concluída — desmarcar" : "Marcar Lektion como concluída (+50 XP)"}
+        </button>
+      </div>
+    `;
+
+    renderTabContent(l, tab);
+
+    view().querySelectorAll(".tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        location.hash = `#/licao/${id}/${btn.dataset.tab}`;
+      });
+    });
+    $("#toggle-done").addEventListener("click", () => {
+      if (P.isLessonDone(id)) P.uncompleteLesson(id);
+      else P.completeLesson(id);
+      renderLesson(id, tab);
+    });
+  }
+
+  function renderTabContent(l, tab) {
+    const box = $("#tab-content");
+    let html = "";
+
+    if (tab === "objetivos") {
+      html = `
+        <section class="card">
+          <h2>🎯 Lernziele — Objetivos</h2>
+          <ul class="goals">${l.lernziele.map(g => `<li>${esc(g)}</li>`).join("")}</ul>
+        </section>
+        ${l.atencao ? `<section class="card warn"><h2>⚠️ Atenção para brasileiros</h2><p>${esc(l.atencao)}</p></section>` : ""}
+        ${(l.prompts || []).length ? `
+        <section class="card">
+          <h2>🤖 Prompts para estudar com IA</h2>
+          ${l.prompts.map(p => `
+            <div class="prompt">
+              <div class="prompt-head"><strong>${esc(p.title)}</strong><button class="copy" data-copy="${esc(p.text)}">Copiar</button></div>
+              <p>${esc(p.text)}</p>
+            </div>`).join("")}
+        </section>` : ""}
+      `;
+    }
+
+    if (tab === "frases") {
+      html = (l.redemittel || []).map(group => `
+        <section class="card">
+          <h2>${esc(group.group)}</h2>
+          <div class="phrase-list">
+            ${group.items.map(([de, pt]) => `
+              <div class="phrase">
+                <span class="phrase-de">${esc(de)}</span>
+                <span class="phrase-pt">${esc(pt)}</span>
+                <button class="speak" data-say="${esc(de)}" title="Ouvir">🔊</button>
+              </div>`).join("")}
+          </div>
+        </section>`).join("") || emptyMsg("Sem frases nesta seção.");
+    }
+
+    if (tab === "gramatica") {
+      html = (l.grammar || []).map(g => `
+        <section class="card">
+          <h2>${esc(g.heading)}</h2>
+          ${g.body ? `<p class="pre">${esc(g.body)}</p>` : ""}
+          ${(g.tables || []).map(t => `
+            <div class="conj">
+              <div class="conj-head">${esc(t.verb)} — <span class="muted">${esc(t.meaning)}</span></div>
+              <div class="conj-grid">${t.forms.map(f => `<span>${esc(f)}</span>`).join("")}</div>
+              ${t.note ? `<p class="conj-note">${esc(t.note)}</p>` : ""}
+            </div>`).join("")}
+        </section>`).join("");
+
+      if (l.numbers) html += `<section class="card"><h2>🔢 ${esc(l.numbers.title)}</h2>
+        <div class="num-grid">${l.numbers.list.map(([n, w]) => `<span class="num"><b>${n}</b> ${esc(w)} <button class="speak" data-say="${esc(w)}">🔊</button></span>`).join("")}</div></section>`;
+      if (l.alphabet) html += `<section class="card"><h2>🔤 ${esc(l.alphabet.title)}</h2>
+        <div class="alpha">${l.alphabet.special.map(([c, s, ex]) => `<div class="alpha-row"><span class="alpha-char">${esc(c)}</span><span>${esc(s)} <em>(${esc(ex)})</em></span><button class="speak" data-say="${esc(ex)}">🔊</button></div>`).join("")}</div></section>`;
+      if (!html) html = emptyMsg("Sem gramática nesta lição.");
+    }
+
+    if (tab === "vocab") {
+      const cats = {};
+      (l.vocab || []).forEach(v => (cats[v.cat] = cats[v.cat] || []).push(v));
+      html = Object.entries(cats).map(([cat, items]) => `
+        <section class="card">
+          <h2>${esc(cat)}</h2>
+          <div class="vocab-list">
+            ${items.map(v => `
+              <div class="vocab">
+                <div class="vocab-main">
+                  <span class="vocab-de">${esc(v.de)}</span>
+                  <button class="speak" data-say="${esc(v.de.replace(/\s*\/.*/, ''))}">🔊</button>
+                </div>
+                <span class="vocab-pt">${esc(v.pt)}</span>
+                ${v.plural ? `<span class="vocab-meta">Plural: ${esc(v.plural)}</span>` : ""}
+              </div>`).join("")}
+          </div>
+        </section>`).join("") || emptyMsg("Sem vocabulário nesta lição.");
+    }
+
+    if (tab === "exercicios") {
+      box.innerHTML = `<div id="quiz-host"></div>`;
+      Quiz.mount($("#quiz-host"), l.id, `Exercícios — L${l.id}`);
+      return;
+    }
+
+    box.innerHTML = html;
+    wireCommon(box);
+  }
+
+  function emptyMsg(t) { return `<section class="card"><p class="muted">${esc(t)}</p></section>`; }
+
+  // Liga botões de copiar e falar
+  function wireCommon(root) {
+    root.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
+      navigator.clipboard?.writeText(b.dataset.copy);
+      b.textContent = "Copiado ✓";
+      setTimeout(() => (b.textContent = "Copiar"), 1500);
+    }));
+    root.querySelectorAll(".speak").forEach(b => b.addEventListener("click", () => speak(b.dataset.say)));
+  }
+
+  function speak(text) {
+    if (!("speechSynthesis" in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "de-DE";
+    u.rate = 0.9;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  }
+
+  // ---------- Tela: Treino (quiz misto geral) ----------
+  function renderTreino() {
+    view().innerHTML = `<header class="page-head"><a class="back" href="#/">‹ Início</a><h1>🧠 Treino rápido</h1>
+      <p class="muted">Quiz misto com todo o conteúdo das 12 Lektionen.</p></header><div id="quiz-host"></div>`;
+    Quiz.mount($("#quiz-host"), null, "Quiz misto");
+  }
+
+  // ---------- Tela: Revisão (SRS) ----------
+  function renderRevisao() {
+    window.SRS.seed();
+    const due = window.SRS.dueCards();
+    const st = window.SRS.stats();
+    if (!due.length) {
+      view().innerHTML = `<header class="page-head"><a class="back" href="#/">‹ Início</a><h1>🔁 Revisão</h1></header>
+        <section class="card center">
+          <p class="big">🎉</p><h2>Tudo em dia!</h2>
+          <p class="muted">Você não tem cards para revisar agora. Volte amanhã.</p>
+          <div class="srs-stats">
+            <span>${st.learned}/${st.total} dominados</span>
+          </div>
+        </section>`;
+      return;
+    }
+    view().innerHTML = `<header class="page-head"><a class="back" href="#/">‹ Início</a><h1>🔁 Revisão</h1>
+      <p class="muted">${due.length} cards · método de repetição espaçada</p></header>
+      <div id="srs-host"></div>`;
+    Flashcards.mountSRS($("#srs-host"), due);
+  }
+
+  // ---------- Tela: Conquistas ----------
+  function renderConquistas() {
+    const P = window.Progress;
+    const list = P.achievementsView();
+    const got = list.filter(a => a.unlocked).length;
+    view().innerHTML = `
+      <header class="page-head"><a class="back" href="#/">‹ Início</a><h1>🏆 Conquistas</h1>
+        <p class="muted">${got}/${list.length} desbloqueadas · Melhor ofensiva: ${P.state.bestStreak} dias</p></header>
+      <div class="ach-grid">
+        ${list.map(a => `
+          <div class="ach ${a.unlocked ? "is-on" : "is-off"}">
+            <span class="ach-ico">${a.icon}</span>
+            <span class="ach-title">${esc(a.title)}</span>
+            <span class="ach-desc">${esc(a.desc)}</span>
+          </div>`).join("")}
+      </div>
+      <section class="card">
+        <h2>📊 Estatísticas</h2>
+        <div class="kv"><span>Exercícios respondidos</span><b>${P.state.exerciseStats.answered}</b></div>
+        <div class="kv"><span>Acertos</span><b>${P.state.exerciseStats.correct}</b></div>
+        <div class="kv"><span>XP total</span><b>${P.state.xp}</b></div>
+      </section>
+      <section class="card">
+        <h2>⚠️ Erros comuns para revisar</h2>
+        ${window.DATA.COMMON_MISTAKES.map(m => `<div class="mistake"><b>${esc(m.titulo)}</b> <span class="x">${esc(m.errado)}</span> → <span class="ok">${esc(m.certo)}</span></div>`).join("")}
+      </section>
+      <section class="card danger">
+        <h2>Zerar progresso</h2>
+        <p class="muted">Apaga todo o seu progresso, XP e revisões neste dispositivo.</p>
+        <button id="reset-btn" class="btn btn-danger">Apagar tudo</button>
+      </section>
+    `;
+    $("#reset-btn").addEventListener("click", () => {
+      if (confirm("Tem certeza? Isso apaga todo o seu progresso.")) {
+        P.reset(); window.SRS.reset(); location.hash = "#/";
+      }
+    });
+  }
+
+  // ---------- Roteador ----------
+  function route() {
+    const hash = location.hash || "#/";
+    const parts = hash.replace(/^#\//, "").split("/").filter(Boolean);
+    window.scrollTo(0, 0);
+
+    if (parts.length === 0) renderHome();
+    else if (parts[0] === "trilha") renderTrack();
+    else if (parts[0] === "licao") renderLesson(parseInt(parts[1], 10), parts[2] || "objetivos");
+    else if (parts[0] === "treino") renderTreino();
+    else if (parts[0] === "revisao") renderRevisao();
+    else if (parts[0] === "conquistas") renderConquistas();
+    else renderHome();
+
+    updateNav(parts[0] || "");
+  }
+
+  function updateNav(active) {
+    document.querySelectorAll(".nav-item").forEach(n => {
+      n.classList.toggle("is-active", n.dataset.route === active || (!active && n.dataset.route === ""));
+    });
+    // badge de revisão
+    const badge = document.getElementById("nav-srs-badge");
+    if (badge) {
+      const due = window.SRS.dueCount();
+      badge.textContent = due || "";
+      badge.style.display = due ? "flex" : "none";
+    }
+  }
+
+  // ---------- Toast de conquista ----------
+  function toast(a) {
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.innerHTML = `<span class="toast-ico">${a.icon}</span><div><b>Conquista desbloqueada!</b><br>${esc(a.title)}</div>`;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add("show"));
+    setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.remove(), 400); }, 3200);
+  }
+
+  function init() {
+    window.SRS.seed();
+    window.Progress.reconcileStreak();
+    window.addEventListener("hashchange", route);
+    window.addEventListener("progress:change", () => updateNav(location.hash.replace(/^#\//, "").split("/")[0]));
+    window.addEventListener("srs:change", () => updateNav(location.hash.replace(/^#\//, "").split("/")[0]));
+    window.addEventListener("achievement:unlock", e => toast(e.detail));
+    route();
+  }
+
+  return { init, speak, wireCommon };
+})();
+
+window.App = App;
+document.addEventListener("DOMContentLoaded", () => App.init());

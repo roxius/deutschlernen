@@ -3,9 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#1a1a2e" />
+  <meta name="theme-color" content="#ffffff" />
   <meta name="description" content="App de estudo de alemão A1.1 + A1.2 — Einfach gut! Deutsch für die Integration" />
   <title>Deutsch lernen · A1</title>
+  <script>
+    // Aplica tema e preferência de movimento antes do render (evita flash)
+    (function () {
+      try {
+        var t = localStorage.getItem("deutschlernen.theme") || "light";
+        var sys = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", t === "system" ? sys : t);
+        if (localStorage.getItem("deutschlernen.motion") === "reduced")
+          document.documentElement.classList.add("reduce-motion");
+      } catch (e) { document.documentElement.setAttribute("data-theme", "light"); }
+    })();
+  </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
@@ -14,14 +26,14 @@
 <body>
   <main id="view" class="view"><!-- conteúdo renderizado por app.js --></main>
 
-  <nav class="bottom-nav">
-    <a class="nav-item" data-route="" href="#/"><span class="ni-ico">🏠</span><span>Início</span></a>
-    <a class="nav-item" data-route="trilha" href="#/trilha"><span class="ni-ico">🗺️</span><span>Trilha</span></a>
-    <a class="nav-item" data-route="treino" href="#/treino"><span class="ni-ico">🧠</span><span>Treino</span></a>
-    <a class="nav-item" data-route="revisao" href="#/revisao">
-      <span class="ni-ico">🔁<span id="nav-srs-badge" class="ni-badge"></span></span><span>Revisão</span>
+  <nav class="bottom-nav" aria-label="Navegação principal">
+    <a class="nav-item" data-route="" href="#/" aria-label="Início"><span class="ni-ico">🏠</span><span>Início</span></a>
+    <a class="nav-item" data-route="trilha" href="#/trilha" aria-label="Trilha"><span class="ni-ico">🗺️</span><span>Trilha</span></a>
+    <a class="nav-item" data-route="treino" href="#/treino" aria-label="Treino"><span class="ni-ico">🧠</span><span>Treino</span></a>
+    <a class="nav-item" data-route="revisao" href="#/revisao" aria-label="Revisão">
+      <span class="ni-ico">🔁<span id="nav-srs-badge" class="ni-badge" aria-hidden="true"></span></span><span>Revisão</span>
     </a>
-    <a class="nav-item" data-route="conquistas" href="#/conquistas"><span class="ni-ico">🏆</span><span>Troféus</span></a>
+    <a class="nav-item" data-route="conquistas" href="#/conquistas" aria-label="Troféus"><span class="ni-ico">🏆</span><span>Troféus</span></a>
   </nav>
 
   <script src="js/content.js"></script>

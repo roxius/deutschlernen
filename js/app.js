@@ -1,5 +1,33 @@
 // app.js — Roteador por hash e renderização de todas as telas.
 
+// ---------- Tema (claro/escuro/sistema) ----------
+const Theme = {
+  KEY: "deutschlernen.theme",
+  get() { return localStorage.getItem(this.KEY) || "light"; },
+  set(v) { localStorage.setItem(this.KEY, v); this.apply(); },
+  effective() {
+    const v = this.get();
+    if (v === "system") return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return v;
+  },
+  apply() {
+    const eff = this.effective();
+    document.documentElement.setAttribute("data-theme", eff);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = eff === "dark" ? "#1a1a2e" : "#ffffff";
+  },
+};
+
+// ---------- Preferência de movimento ----------
+const Motion = {
+  KEY: "deutschlernen.motion",
+  isReduced() { return localStorage.getItem(this.KEY) === "reduced"; },
+  toggle() { localStorage.setItem(this.KEY, this.isReduced() ? "full" : "reduced"); this.apply(); },
+  apply() { document.documentElement.classList.toggle("reduce-motion", this.isReduced()); },
+};
+
+function haptic(pattern) { try { navigator.vibrate?.(pattern); } catch (e) {} }
+
 const App = (() => {
   const $ = (sel, root = document) => root.querySelector(sel);
   const view = () => document.getElementById("view");
@@ -7,7 +35,8 @@ const App = (() => {
 
   // ---------- Componentes reutilizáveis ----------
   function progressBar(pct) {
-    return `<div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>`;
+    // width:0 + data-w → animação de preenchimento disparada após o render
+    return `<div class="bar"><div class="bar-fill" style="width:0" data-w="${pct}"></div></div>`;
   }
 
   function lessonById(id) { return window.DATA.LESSONS.find(l => l.id === id); }
@@ -30,13 +59,16 @@ const App = (() => {
 
     view().innerHTML = `
       <header class="hero">
-        <p class="hero-greet">${greeting}! 👋</p>
+        <div class="hero-top">
+          <p class="hero-greet">${greeting}! 👋</p>
+          <a class="icon-btn" href="#/config" aria-label="Configurações">⚙️</a>
+        </div>
         <h1>Sua jornada no alemão</h1>
         <p class="hero-sub">${esc(window.DATA.COURSE.title)} · ${window.DATA.COURSE.level}</p>
       </header>
 
       <div class="stat-row">
-        <div class="stat-card">
+        <div class="stat-card ${P.state.streak ? "streak-on" : ""}">
           <span class="stat-icon">🔥</span>
           <span class="stat-num">${P.state.streak}</span>
           <span class="stat-lbl">dias seguidos</span>
@@ -175,7 +207,7 @@ const App = (() => {
     });
     $("#toggle-done").addEventListener("click", () => {
       if (P.isLessonDone(id)) P.uncompleteLesson(id);
-      else P.completeLesson(id);
+      else { P.completeLesson(id); haptic([12, 30, 12]); }
       renderLesson(id, tab);
     });
   }
@@ -270,14 +302,25 @@ const App = (() => {
 
   function emptyMsg(t) { return `<section class="card"><p class="muted">${esc(t)}</p></section>`; }
 
-  // Liga botões de copiar e falar
+  // Liga botões de copiar e falar (+ acessibilidade)
   function wireCommon(root) {
-    root.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
-      navigator.clipboard?.writeText(b.dataset.copy);
-      b.textContent = "Copiado ✓";
-      setTimeout(() => (b.textContent = "Copiar"), 1500);
-    }));
-    root.querySelectorAll(".speak").forEach(b => b.addEventListener("click", () => speak(b.dataset.say)));
+    root.querySelectorAll(".copy").forEach(b => {
+      b.setAttribute("aria-label", "Copiar texto");
+      b.addEventListener("click", () => {
+        navigator.clipboard?.writeText(b.dataset.copy);
+        b.textContent = "Copiado ✓";
+        haptic(8);
+        setTimeout(() => (b.textContent = "Copiar"), 1500);
+      });
+    });
+    root.querySelectorAll(".speak").forEach(b => {
+      b.setAttribute("aria-label", "Ouvir em alemão");
+      b.addEventListener("click", () => {
+        speak(b.dataset.say);
+        b.classList.add("speaking");
+        setTimeout(() => b.classList.remove("speaking"), 700);
+      });
+    });
   }
 
   function speak(text) {
@@ -344,17 +387,71 @@ const App = (() => {
         <h2>⚠️ Erros comuns para revisar</h2>
         ${window.DATA.COMMON_MISTAKES.map(m => `<div class="mistake"><b>${esc(m.titulo)}</b> <span class="x">${esc(m.errado)}</span> → <span class="ok">${esc(m.certo)}</span></div>`).join("")}
       </section>
+      <a class="btn" href="#/config">⚙️ Configurações</a>
+    `;
+  }
+
+  // ---------- Tela: Configurações ----------
+  function renderConfig() {
+    const curr = Theme.get();
+    const reduced = Motion.isReduced();
+    const themeBtn = (val, ico, label) =>
+      `<button data-theme-val="${val}" class="${curr === val ? "is-active" : ""}" aria-pressed="${curr === val}"><span class="seg-ico">${ico}</span>${label}</button>`;
+
+    view().innerHTML = `
+      <header class="page-head"><a class="back" href="#/">‹ Início</a><h1>⚙️ Configurações</h1></header>
+      <section class="card">
+        <h2>🎨 Tema</h2>
+        <div class="seg" id="theme-seg" role="group" aria-label="Escolher tema">
+          ${themeBtn("light", "☀️", "Claro")}
+          ${themeBtn("dark", "🌙", "Escuro")}
+          ${themeBtn("system", "🖥️", "Sistema")}
+        </div>
+      </section>
+      <section class="card">
+        <h2>✨ Animações</h2>
+        <div class="row-toggle">
+          <div><div>Reduzir animações</div><div class="rt-desc">Desativa transições e efeitos de movimento (acessibilidade).</div></div>
+          <button class="switch ${reduced ? "on" : ""}" id="motion-switch" role="switch" aria-checked="${reduced}" aria-label="Reduzir animações"></button>
+        </div>
+      </section>
+      <section class="card">
+        <h2>🔊 Pronúncia</h2>
+        <div class="row-toggle">
+          <div><div>Voz em alemão</div><div class="rt-desc" id="voice-status">Verificando…</div></div>
+          <button class="btn" style="width:auto;padding:10px 16px" id="test-voice">Testar 🔊</button>
+        </div>
+      </section>
       <section class="card danger">
         <h2>Zerar progresso</h2>
         <p class="muted">Apaga todo o seu progresso, XP e revisões neste dispositivo.</p>
         <button id="reset-btn" class="btn btn-danger">Apagar tudo</button>
       </section>
+      <p class="muted center small">Deutsch lernen · A1 — Einfach gut! 🇩🇪</p>
     `;
+
+    view().querySelectorAll("#theme-seg button").forEach(b =>
+      b.addEventListener("click", () => { Theme.set(b.dataset.themeVal); haptic(8); renderConfig(); }));
+    $("#motion-switch").addEventListener("click", () => { Motion.toggle(); renderConfig(); });
+    $("#test-voice").addEventListener("click", () => speak("Guten Tag! Wie geht es Ihnen?"));
     $("#reset-btn").addEventListener("click", () => {
       if (confirm("Tem certeza? Isso apaga todo o seu progresso.")) {
-        P.reset(); window.SRS.reset(); location.hash = "#/";
+        window.Progress.reset(); window.SRS.reset(); location.hash = "#/";
       }
     });
+    updateVoiceStatus();
+  }
+
+  function updateVoiceStatus() {
+    const el = $("#voice-status");
+    if (!el) return;
+    if (!("speechSynthesis" in window)) { el.textContent = "Não suportado neste navegador."; return; }
+    const check = () => {
+      const hasDe = speechSynthesis.getVoices().some(v => v.lang && v.lang.toLowerCase().startsWith("de"));
+      el.textContent = hasDe ? "Voz alemã disponível ✓" : "Usando a voz padrão do sistema.";
+    };
+    check();
+    speechSynthesis.onvoiceschanged = check;
   }
 
   // ---------- Roteador ----------
@@ -369,9 +466,18 @@ const App = (() => {
     else if (parts[0] === "treino") renderTreino();
     else if (parts[0] === "revisao") renderRevisao();
     else if (parts[0] === "conquistas") renderConquistas();
+    else if (parts[0] === "config") renderConfig();
     else renderHome();
 
     updateNav(parts[0] || "");
+    animateBars();
+  }
+
+  // Dispara o preenchimento animado das barras de progresso após o render
+  function animateBars() {
+    requestAnimationFrame(() => {
+      view().querySelectorAll(".bar-fill[data-w]").forEach(el => { el.style.width = el.dataset.w + "%"; });
+    });
   }
 
   function updateNav(active) {
@@ -398,6 +504,12 @@ const App = (() => {
   }
 
   function init() {
+    Theme.apply();
+    Motion.apply();
+    // Atualiza o tema automaticamente quando o sistema muda (modo "Sistema")
+    matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => {
+      if (Theme.get() === "system") Theme.apply();
+    });
     window.SRS.seed();
     window.Progress.reconcileStreak();
     window.addEventListener("hashchange", route);

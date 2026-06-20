@@ -39,6 +39,7 @@ const Quiz = (() => {
       const chosen = btn.textContent;
       const ok = chosen === q.answer;
       if (ok) state.correct++;
+      try { navigator.vibrate?.(ok ? 14 : [10, 40, 10]); } catch (e) {}
       window.Progress.recordExercise(ok);
       host.querySelectorAll(".opt").forEach(b => {
         b.disabled = true;

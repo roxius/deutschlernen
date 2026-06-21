@@ -49,7 +49,11 @@ const App = (() => {
     const total = window.DATA.LESSONS.length;
     const overallPct = Math.round((done / total) * 100);
     const due = window.SRS.dueCount();
-    const last = P.state.lastLessonId ? lessonById(P.state.lastLessonId) : null;
+    // Alvo do card "Continuar": primeira Lektion não concluída; se todas feitas, revisar
+    const lessonsByOrder = window.DATA.LESSONS.slice().sort((a, b) => a.id - b.id);
+    const nextTodo = lessonsByOrder.find(l => !P.isLessonDone(l.id));
+    const target = nextTodo || (P.state.lastLessonId ? lessonById(P.state.lastLessonId) : lessonsByOrder[0]);
+    const ctaEyebrow = done === 0 ? "Começar" : nextTodo ? "Continuar" : "Revisar";
     const greeting = (() => {
       const h = new Date().getHours();
       if (h < 10) return "Guten Morgen";
@@ -99,15 +103,10 @@ const App = (() => {
       </section>
 
       <div class="cta-grid">
-        ${last
-          ? `<a class="cta cta-primary" href="#/licao/${last.id}">
-               <span class="cta-eyebrow">Continuar</span>
-               <span class="cta-title">${last.icon} L${last.id} · ${esc(last.title)}</span>
-             </a>`
-          : `<a class="cta cta-primary" href="#/licao/1">
-               <span class="cta-eyebrow">Começar</span>
-               <span class="cta-title">👋 Lektion 1 · Hallo!</span>
-             </a>`}
+        <a class="cta cta-primary" href="#/licao/${target.id}">
+          <span class="cta-eyebrow">${ctaEyebrow}</span>
+          <span class="cta-title">${target.icon} L${target.id} · ${esc(target.title)}</span>
+        </a>
         <a class="cta ${due ? "cta-alert" : ""}" href="#/revisao">
           <span class="cta-eyebrow">Revisão (SRS)</span>
           <span class="cta-title">🔁 ${due ? due + " cards para revisar" : "Em dia ✓"}</span>
@@ -166,6 +165,13 @@ const App = (() => {
     { key: "exercicios", label: "Exercícios" },
   ];
 
+  // Navegação para frente no rodapé da lição
+  function nextNav(id) {
+    if (id >= 12) return `<a class="btn btn-ghost" href="#/trilha">Concluir trilha 🎉</a>`;
+    const nx = lessonById(id + 1);
+    return `<a class="btn btn-ghost" href="#/licao/${id + 1}">Próxima → L${id + 1} · ${esc(nx.title)}</a>`;
+  }
+
   function renderLesson(id, tab = "objetivos") {
     const l = lessonById(id);
     if (!l) return renderHome();
@@ -195,6 +201,7 @@ const App = (() => {
         <button id="toggle-done" class="btn ${done ? "btn-done" : "btn-primary"}">
           ${done ? "✓ Concluída — desmarcar" : "Marcar Lektion como concluída (+50 XP)"}
         </button>
+        ${nextNav(id)}
       </div>
     `;
 
@@ -206,9 +213,13 @@ const App = (() => {
       });
     });
     $("#toggle-done").addEventListener("click", () => {
-      if (P.isLessonDone(id)) P.uncompleteLesson(id);
-      else { P.completeLesson(id); haptic([12, 30, 12]); }
-      renderLesson(id, tab);
+      if (P.isLessonDone(id)) { P.uncompleteLesson(id); renderLesson(id, tab); }
+      else {
+        P.completeLesson(id);
+        haptic([12, 30, 12]);
+        // avança automaticamente: próxima Lektion, ou Trilha se for a última
+        location.hash = id < 12 ? `#/licao/${id + 1}` : "#/trilha";
+      }
     });
   }
 

@@ -203,7 +203,7 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 .tab { white-space: nowrap; background: var(--surface); border: 1px solid var(--border);
   color: var(--muted); padding: 9px 15px; border-radius: 999px; font-weight: 600; font-size: .88rem; }
 .tab.is-active { background: var(--primary); color: #fff; border-color: var(--primary); }
-.lesson-footer { margin-top: 6px; }
+.lesson-footer { margin-top: 6px; display: flex; flex-direction: column; gap: 8px; }
 
 /* ---- Botões ---- */
 .btn { width: 100%; padding: 14px; border-radius: 14px; font-weight: 700; font-size: 1rem;
@@ -211,6 +211,7 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-deep)); color: #fff; }
 .btn-done { background: linear-gradient(135deg, var(--green), #15824f); color: #fff; }
 .btn-danger { background: var(--red); color: #fff; }
+.btn-ghost { background: transparent; color: var(--primary); border: 1px solid var(--border); }
 .btn:active { transform: scale(.98); }
 @media (hover: hover) { .btn:hover { filter: brightness(1.06); } }
 a.btn { display: inline-block; text-align: center; width: auto; padding: 12px 24px; margin-top: 8px; }

@@ -115,6 +115,10 @@ const App = (() => {
           <span class="cta-eyebrow">Treino rápido</span>
           <span class="cta-title">🧠 Quiz misto</span>
         </a>
+        <a class="cta" href="#/verben">
+          <span class="cta-eyebrow">Notas da Nadine</span>
+          <span class="cta-title">📝 Verben — verbos & Perfekt</span>
+        </a>
       </div>
 
       <section class="card tips">
@@ -352,6 +356,10 @@ const App = (() => {
       view().innerHTML = `
         <header class="page-head"><a class="back" href="#/">‹ Início</a><h1>🧠 Treino</h1>
           <p class="muted">Escolha um tópico para focar — ou faça o quiz misto.</p></header>
+        <a class="cta cta-primary" href="#/verben">
+          <span class="cta-eyebrow">Notas da Nadine</span>
+          <span class="cta-title">📝 Verben — verbos, fórmulas e treinos →</span>
+        </a>
         <div class="topic-grid">
           ${topics.map(t => `
             <a class="topic-card" href="#/treino/${t.key}">
@@ -370,6 +378,85 @@ const App = (() => {
         <p class="muted">${esc(t.desc)}</p></header>
       <div id="quiz-host"></div>`;
     Quiz.mount($("#quiz-host"), null, t.label, t.key === "mixed" ? null : t.key);
+  }
+
+  // ---------- Tela: Verben (hub das notas da Nadine) ----------
+  function renderVerben(sub, arg) {
+    if (sub === "tabela") return renderVerbTable();
+    if (sub === "formulas") return renderVerbFormulas();
+    if (sub === "treino") return renderVerbDrill(arg);
+
+    const drills = window.Drills.types;
+    view().innerHTML = `
+      <header class="page-head"><a class="back" href="#/">‹ Início</a><h1>📝 Verben</h1>
+        <p class="muted">Verbos, fórmulas e treinos a partir das notas da aula com a Nadine.</p></header>
+      <div class="cta-grid">
+        <a class="cta" href="#/verben/tabela">
+          <span class="cta-eyebrow">Referência</span>
+          <span class="cta-title">📋 Tabela de verbos (Infinitiv · Präteritum · Partizip II)</span>
+        </a>
+        <a class="cta" href="#/verben/formulas">
+          <span class="cta-eyebrow">Fórmulas</span>
+          <span class="cta-title">🧠 Perfekt, Partizip II, haben/sein, TeKaMoLo…</span>
+        </a>
+      </div>
+      <section class="part">
+        <div class="part-head"><h2>Treinos desafiadores</h2><span class="muted">digite a resposta</span></div>
+        <div class="topic-grid">
+          ${drills.map(d => `
+            <a class="topic-card" href="#/verben/treino/${d.key}">
+              <span class="topic-ico">${d.icon}</span>
+              <span class="topic-title">${esc(d.label)}</span>
+              <span class="topic-desc">${esc(d.desc)}</span>
+            </a>`).join("")}
+        </div>
+      </section>`;
+  }
+
+  function renderVerbTable() {
+    const rows = window.VERBS.slice().sort((a, b) => a.inf.localeCompare(b.inf));
+    const rowHtml = (v) => `
+      <tr data-k="${esc((v.inf + " " + v.pt + " " + v.praet + " " + v.pp).toLowerCase())}">
+        <td><b>${esc(v.inf)}</b>${v.change ? `<span class="vt-tag">${esc(v.change)}</span>` : v.mixed ? `<span class="vt-tag">mista</span>` : ""}<span class="vt-pt">${esc(v.pt)}</span></td>
+        <td>${esc(v.praet)}</td>
+        <td>${esc(v.pp)}<span class="vt-aux ${v.aux}">${v.aux}</span></td>
+      </tr>`;
+    view().innerHTML = `
+      <header class="page-head"><a class="back" href="#/verben">‹ Verben</a><h1>📋 Tabela de verbos</h1></header>
+      <input class="search" id="vt-search" type="search" placeholder="Buscar verbo (alemão ou português)…" aria-label="Buscar verbo" />
+      <section class="card vt-card">
+        <table class="vt">
+          <thead><tr><th>Infinitiv</th><th>Präteritum</th><th>Partizip II</th></tr></thead>
+          <tbody id="vt-body">${rows.map(rowHtml).join("")}</tbody>
+        </table>
+      </section>`;
+    const search = $("#vt-search"), body = $("#vt-body");
+    search.addEventListener("input", () => {
+      const q = window.Drills.normalize(search.value);
+      body.querySelectorAll("tr").forEach(tr => {
+        tr.style.display = !q || window.Drills.normalize(tr.dataset.k).includes(q) ? "" : "none";
+      });
+    });
+  }
+
+  function renderVerbFormulas() {
+    view().innerHTML = `
+      <header class="page-head"><a class="back" href="#/verben">‹ Verben</a><h1>🧠 Fórmulas</h1></header>
+      ${window.VERB_NOTES.map(n => `
+        <section class="card note-card">
+          <h2>${n.icon} ${esc(n.title)}</h2>
+          <div class="note-body">${n.body}</div>
+        </section>`).join("")}`;
+  }
+
+  function renderVerbDrill(type) {
+    const meta = window.Drills.types.find(t => t.key === type);
+    if (!meta) return renderVerben();
+    view().innerHTML = `
+      <header class="page-head"><a class="back" href="#/verben">‹ Verben</a><h1>${meta.icon} ${esc(meta.label)}</h1>
+        <p class="muted">${esc(meta.desc)}</p></header>
+      <div id="drill-host"></div>`;
+    Drill.mount($("#drill-host"), window.Drills.generate(type, 8), meta.label);
   }
 
   // ---------- Tela: Revisão (SRS) ----------
@@ -497,6 +584,7 @@ const App = (() => {
     else if (parts[0] === "trilha") renderTrack();
     else if (parts[0] === "licao") renderLesson(parseInt(parts[1], 10), parts[2] || "objetivos");
     else if (parts[0] === "treino") renderTreino(parts[1] || null);
+    else if (parts[0] === "verben") renderVerben(parts[1] || null, parts[2] || null);
     else if (parts[0] === "revisao") renderRevisao();
     else if (parts[0] === "conquistas") renderConquistas();
     else if (parts[0] === "config") renderConfig();

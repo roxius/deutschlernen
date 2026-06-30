@@ -361,3 +361,57 @@ a.btn { display: inline-block; text-align: center; width: auto; padding: 12px 24
   opacity: 0; transition: all .45s var(--ease); z-index: 100; max-width: 90vw; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast-ico { font-size: 1.6rem; animation: pop .6s var(--ease); }
+
+/* ===================== Verben hub ===================== */
+/* Busca */
+.search { width: 100%; padding: 12px 14px; margin-bottom: 12px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 1rem; }
+
+/* Tabela de verbos */
+.vt-card { padding: 6px 4px; overflow-x: auto; }
+.vt { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.vt th { text-align: left; color: var(--muted); font-size: .74rem; text-transform: uppercase;
+  letter-spacing: .4px; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.vt td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.vt tr:last-child td { border-bottom: none; }
+.vt-pt { display: block; color: var(--muted); font-size: .78rem; margin-top: 2px; }
+.vt-tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px;
+  background: var(--tint-info); color: var(--primary-2); font-size: .68rem; font-weight: 700; }
+.vt-aux { display: inline-block; margin-left: 7px; padding: 1px 7px; border-radius: 999px;
+  font-size: .68rem; font-weight: 700; }
+.vt-aux.haben { background: rgba(31,157,99,.16); color: var(--green); }
+.vt-aux.sein { background: rgba(108,92,231,.16); color: var(--primary-2); }
+
+/* Cards de fórmula */
+.note-card .note-body { font-size: .95rem; line-height: 1.5; }
+.note-card .note-body p { margin: 8px 0; }
+.note-card .note-body ul { margin: 8px 0 8px 18px; display: grid; gap: 4px; }
+.note-card .note-body .ex { background: var(--surface-2); border-radius: 10px; padding: 8px 12px; }
+.note-card .note-body u { text-decoration-color: var(--primary-2); }
+
+/* ===================== Drills (digitação) ===================== */
+.drill .ex-sentence { display: inline-block; margin-top: 6px; line-height: 1.7; }
+.drill .blank { display: inline-block; min-width: 56px; border-bottom: 2px dashed var(--primary-2);
+  text-align: center; color: var(--primary-2); }
+.drill-blanks { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+.drill-input { flex: 1 1 140px; padding: 13px 14px; border-radius: 12px; font-size: 1.05rem;
+  background: var(--surface); border: 2px solid var(--border); color: var(--text); transition: border-color .15s var(--ease); }
+.drill-input:focus-visible { border-color: var(--primary); outline: none; }
+.drill-input.is-correct { border-color: var(--green); }
+.drill-input.is-wrong { border-color: var(--red); }
+
+/* TeKaMoLo: blocos */
+.drill-answer { min-height: 50px; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;
+  padding: 10px; margin: 12px 0; border-radius: 12px; border: 2px dashed var(--border); background: var(--surface-2); }
+.drill-answer:empty::before { content: "toque nos blocos abaixo na ordem certa"; color: var(--muted); font-size: .85rem; }
+.drill-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.chip { padding: 9px 13px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); font-size: .92rem; font-weight: 600; transition: transform .12s var(--ease), opacity .15s; }
+.chip:active { transform: scale(.95); }
+.chip.is-used { opacity: .35; pointer-events: none; }
+.chip-picked { background: var(--tint-info); border-color: var(--primary-2); color: var(--primary-2); }
+
+/* Feedback do drill */
+.drill-tip { margin-top: 10px; padding: 10px 13px; border-radius: 12px; background: var(--tint-info);
+  color: var(--text); font-size: .9rem; line-height: 1.45; }
+.drill-solution { margin-top: 10px; font-size: .95rem; }

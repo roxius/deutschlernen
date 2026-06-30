@@ -1,15 +1,17 @@
 // sw.js — Service Worker: stale-while-revalidate para uso offline (PWA).
 // Serve do cache imediatamente, mas revalida em segundo plano: assim o
 // usuário continua offline-first E recebe atualizações no próximo carregamento.
-const CACHE = "deutschlernen-v2";
+const CACHE = "deutschlernen-v3";
 const ASSETS = [
   "./",
   "./index.html",
   "./css/styles.css",
   "./js/content.js",
+  "./js/verbs.js",
   "./js/progress.js",
   "./js/srs.js",
   "./js/exercises.js",
+  "./js/drills.js",
   "./js/ui.js",
   "./js/app.js",
   "./manifest.webmanifest",

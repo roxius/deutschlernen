@@ -41,6 +41,18 @@ const SRS = (() => {
         deck[id] = { box: 1, due: today(), front: "❌ " + m.errado, back: "✅ " + m.certo, hint: m.titulo, lektion: m.lektion, type: "mistake" };
       }
     });
+    // Verbos das notas da Nadine (Infinitiv → Präteritum + Partizip II)
+    (window.VERBS || []).forEach(v => {
+      const id = "vb:" + v.inf;
+      if (!deck[id]) {
+        deck[id] = {
+          box: 1, due: today(), type: "verb",
+          front: v.inf + " (" + v.pt + ")",
+          back: "Prät.: " + v.praet + " · Part. II: " + v.pp + " · (" + v.aux + ")",
+          hint: v.change || (v.mixed ? "forma mista" : v.aux),
+        };
+      }
+    });
     save();
   }
 

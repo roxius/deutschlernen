@@ -415,3 +415,6 @@ a.btn { display: inline-block; text-align: center; width: auto; padding: 12px 24
 .drill-tip { margin-top: 10px; padding: 10px 13px; border-radius: 12px; background: var(--tint-info);
   color: var(--text); font-size: .9rem; line-height: 1.45; }
 .drill-solution { margin-top: 10px; font-size: .95rem; }
+
+/* Frases-exemplo dentro da dica */
+.hint-ex { display: block; margin-top: 6px; font-size: .92em; line-height: 1.4; }

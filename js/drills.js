@@ -43,25 +43,33 @@ const Drills = (() => {
 
   function verbByInf(inf) { return (window.VERBS || []).find(v => v.inf === inf); }
 
+  // Frases-exemplo (Präsens) que acompanham a dica, sem revelar a forma do passado.
+  function exHtml(inf, max = 2) {
+    const ex = (window.VERB_EX || {})[inf];
+    if (!ex || !ex.length) return "";
+    return ex.slice(0, max).map(([de, pt]) =>
+      `<span class="hint-ex">📝 <i>${de}</i> <span class="muted">(${pt})</span></span>`).join("");
+  }
+
   // Dicas mostradas ANTES de responder (opt-in): apontam o padrão + a forma "irmã"
   // (a outra coluna da tabela), sem imprimir a própria resposta.
   function partizipHint(v) {
     const padrao = v.sep ? "<b>separável</b> (prefixo + ge + radical)"
       : v.mixed ? "<b>misto</b> (radical muda + termina em <b>-t</b>)"
       : "<b>forte</b> (termina em <b>-en</b>, o radical pode mudar)";
-    return `É ${padrao}. Pista — Präteritum: <b>${v.praet}</b>. Auxiliar: <b>${v.aux}</b>.`;
+    return `É ${padrao}. Pista — Präteritum: <b>${v.praet}</b>. Auxiliar: <b>${v.aux}</b>.${exHtml(v.inf)}`;
   }
   function praeteritumHint(v) {
     const padrao = v.mixed ? "verbo <b>misto</b>" : "verbo <b>forte</b>";
-    return `É ${padrao}. Pista — Partizip II: <b>${v.pp}</b>. A vogal do Präteritum costuma diferir do particípio.`;
+    return `É ${padrao}. Pista — Partizip II: <b>${v.pp}</b>. A vogal do Präteritum costuma diferir do particípio.${exHtml(v.inf)}`;
   }
   function perfektHint(b) {
     const v = verbByInf(b.inf);
     const praetPista = v ? ` Präteritum de <b>${b.inf}</b>: <b>${v.praet}</b>.` : "";
-    return `Escolha o auxiliar: movimento/mudança de estado → <b>sein</b>; senão → <b>haben</b>.${praetPista}`;
+    return `Escolha o auxiliar: movimento/mudança de estado → <b>sein</b>; senão → <b>haben</b>.${praetPista}${exHtml(b.inf)}`;
   }
   function praesensHint(b) {
-    return `Verbo forte: a vogal muda <b>${b.change}</b> no du e er/sie/es; a terminação continua normal (du <b>-st</b>, er <b>-t</b>).`;
+    return `Verbo forte: a vogal muda <b>${b.change}</b> no du e er/sie/es; a terminação continua normal (du <b>-st</b>, er <b>-t</b>).${exHtml(b.inf, 1)}`;
   }
   const TEKAMOLO_HINT = "Verbo conjugado em <b>2ª posição</b>; depois os complementos na ordem <b>Te–Ka–Mo–Lo</b> (Temporal → Kausal → Modal → Lokal). Pronomes vêm logo após o verbo.";
 

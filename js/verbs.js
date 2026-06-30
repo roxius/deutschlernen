@@ -185,7 +185,60 @@ const TEKAMOLO_BANK = [
   },
 ];
 
+// Frases-exemplo úteis por verbo (Präsens, com tradução PT). Em Präsens de propósito:
+// assim podem acompanhar as dicas de Partizip II / Präteritum sem revelar a resposta.
+// Formato: inf -> [[alemão, português], ...] (1 a 2 por verbo).
+const VERB_EX = {
+  essen: [["Ich esse gern Käse.", "Como queijo com gosto."], ["Was isst du zum Frühstück?", "O que você come no café da manhã?"]],
+  geben: [["Ich gebe dir mein Buch.", "Te dou meu livro."]],
+  helfen: [["Ich helfe meiner Mutter.", "Ajudo minha mãe."]],
+  sprechen: [["Wir sprechen Deutsch.", "Falamos alemão."]],
+  treffen: [["Ich treffe heute Freunde.", "Encontro amigos hoje."]],
+  nehmen: [["Ich nehme den Bus.", "Pego o ônibus."]],
+  vergessen: [["Ich vergesse oft Namen.", "Esqueço nomes com frequência."]],
+  sehen: [["Ich sehe einen Film.", "Vejo um filme."]],
+  lesen: [["Ich lese ein Buch.", "Leio um livro."]],
+  empfehlen: [["Ich empfehle dir das Restaurant.", "Te recomendo o restaurante."]],
+  fahren: [["Ich fahre nach München.", "Vou a Munique (de carro/trem)."]],
+  fallen: [["Die Blätter fallen im Herbst.", "As folhas caem no outono."]],
+  schlafen: [["Ich schlafe acht Stunden.", "Durmo oito horas."]],
+  backen: [["Wir backen einen Kuchen.", "Assamos um bolo."]],
+  waschen: [["Ich wasche mir die Hände.", "Lavo as mãos."]],
+  tragen: [["Ich trage eine Jacke.", "Uso uma jaqueta."]],
+  laufen: [["Ich laufe im Park.", "Corro/ando no parque."]],
+  stoßen: [["Ich stoße an den Tisch.", "Bato na mesa."]],
+  brennen: [["Die Kerze brennt.", "A vela queima."]],
+  bringen: [["Ich bringe Wein mit.", "Trago vinho (comigo)."]],
+  denken: [["Ich denke an dich.", "Penso em você."]],
+  kennen: [["Ich kenne die Stadt gut.", "Conheço bem a cidade."]],
+  nennen: [["Wir nennen ihn Max.", "Nós o chamamos de Max."]],
+  rennen: [["Die Kinder rennen schnell.", "As crianças correm rápido."]],
+  senden: [["Ich sende dir eine E-Mail.", "Te envio um e-mail."]],
+  wissen: [["Ich weiß die Antwort.", "Sei a resposta."]],
+  dürfen: [["Darf ich hier rauchen?", "Posso fumar aqui?"]],
+  können: [["Ich kann schwimmen.", "Sei nadar."]],
+  müssen: [["Ich muss arbeiten.", "Preciso trabalhar."]],
+  mögen: [["Ich mag Schokolade.", "Gosto de chocolate."]],
+  wollen: [["Ich will nach Hause.", "Quero ir para casa."]],
+  sollen: [["Du sollst mehr schlafen.", "Você deveria dormir mais."]],
+  gehen: [["Ich gehe ins Kino.", "Vou ao cinema."], ["Wie geht es dir?", "Como você está?"]],
+  kommen: [["Ich komme aus Brasilien.", "Venho do Brasil."]],
+  steigen: [["Die Preise steigen.", "Os preços sobem."]],
+  sterben: [["Die Pflanze stirbt ohne Wasser.", "A planta morre sem água."]],
+  werden: [["Es wird kalt.", "Está ficando frio."]],
+  bleiben: [["Ich bleibe heute zu Hause.", "Fico em casa hoje."]],
+  sein: [["Ich bin müde.", "Estou cansado."], ["Wo bist du?", "Onde você está?"]],
+  geschehen: [["Was geschieht hier?", "O que acontece aqui?"]],
+  aufstehen: [["Ich stehe früh auf.", "Levanto cedo."]],
+  trinken: [["Ich trinke einen Kaffee.", "Bebo um café."]],
+  finden: [["Ich finde den Schlüssel nicht.", "Não acho a chave."]],
+  schreiben: [["Ich schreibe einen Brief.", "Escrevo uma carta."]],
+  haben: [["Ich habe einen Hund.", "Tenho um cachorro."]],
+  verlieren: [["Ich verliere oft meinen Schlüssel.", "Perco minha chave com frequência."]],
+};
+
 window.VERBS = VERBS;
+window.VERB_EX = VERB_EX;
 window.VERB_NOTES = VERB_NOTES;
 window.PERFEKT_BANK = PERFEKT_BANK;
 window.PRAESENS_BANK = PRAESENS_BANK;

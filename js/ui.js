@@ -171,10 +171,14 @@ const Drill = (() => {
           </div>
           <div class="bar"><div class="bar-fill" style="width:${(state.i / n) * 100}%"></div></div>
           <div class="quiz-q">${q.prompt}</div>
+          ${q.hint ? `<button class="hint-btn" id="hint-btn" type="button">💡 Dica</button>
+          <div class="quiz-hint" id="quiz-hint" hidden>${q.hint}</div>` : ""}
           ${q.type === "tekamolo" ? blocksHtml(q) : fieldsHtml(q)}
           <button class="btn btn-primary" id="check">Verificar</button>
           <div class="quiz-feedback" id="dfb"></div>
         </section>`;
+      const hb = host.querySelector("#hint-btn");
+      if (hb) hb.addEventListener("click", () => { host.querySelector("#quiz-hint").hidden = false; hb.hidden = true; });
       if (q.type === "tekamolo") wireBlocks(q);
       else {
         const first = host.querySelector(".drill-input");
@@ -242,6 +246,8 @@ const Drill = (() => {
 
       host.querySelectorAll(".drill-input").forEach(inp => { inp.disabled = true; inp.classList.add(ok ? "is-correct" : "is-wrong"); });
       host.querySelectorAll("#pool .chip, #answer .chip").forEach(c => c.disabled = true);
+      const hb = host.querySelector("#hint-btn");
+      if (hb) hb.hidden = true; // a explicação/solução cobrem a partir daqui
       const fb = host.querySelector("#dfb");
       fb.innerHTML = `
         <div class="fb ${ok ? "fb-ok" : "fb-no"}">${ok ? "✓ Richtig!" : "✗ Falsch — você escreveu: <b>" + esc(given || "—") + "</b>"}</div>

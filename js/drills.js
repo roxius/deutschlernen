@@ -41,6 +41,30 @@ const Drills = (() => {
     return "Verbo <b>forte/irregular</b>: Partizip II costuma terminar em <b>-en</b> com mudança de radical.";
   }
 
+  function verbByInf(inf) { return (window.VERBS || []).find(v => v.inf === inf); }
+
+  // Dicas mostradas ANTES de responder (opt-in): apontam o padrão + a forma "irmã"
+  // (a outra coluna da tabela), sem imprimir a própria resposta.
+  function partizipHint(v) {
+    const padrao = v.sep ? "<b>separável</b> (prefixo + ge + radical)"
+      : v.mixed ? "<b>misto</b> (radical muda + termina em <b>-t</b>)"
+      : "<b>forte</b> (termina em <b>-en</b>, o radical pode mudar)";
+    return `É ${padrao}. Pista — Präteritum: <b>${v.praet}</b>. Auxiliar: <b>${v.aux}</b>.`;
+  }
+  function praeteritumHint(v) {
+    const padrao = v.mixed ? "verbo <b>misto</b>" : "verbo <b>forte</b>";
+    return `É ${padrao}. Pista — Partizip II: <b>${v.pp}</b>. A vogal do Präteritum costuma diferir do particípio.`;
+  }
+  function perfektHint(b) {
+    const v = verbByInf(b.inf);
+    const praetPista = v ? ` Präteritum de <b>${b.inf}</b>: <b>${v.praet}</b>.` : "";
+    return `Escolha o auxiliar: movimento/mudança de estado → <b>sein</b>; senão → <b>haben</b>.${praetPista}`;
+  }
+  function praesensHint(b) {
+    return `Verbo forte: a vogal muda <b>${b.change}</b> no du e er/sie/es; a terminação continua normal (du <b>-st</b>, er <b>-t</b>).`;
+  }
+  const TEKAMOLO_HINT = "Verbo conjugado em <b>2ª posição</b>; depois os complementos na ordem <b>Te–Ka–Mo–Lo</b> (Temporal → Kausal → Modal → Lokal). Pronomes vêm logo após o verbo.";
+
   // --- Partizip II (digite) ---
   function makePartizip() {
     const v = sample(window.VERBS, 1)[0];
@@ -50,6 +74,7 @@ const Drills = (() => {
       fields: [{ ph: "Partizip II" }],
       accept: [[v.pp]],
       solution: v.pp,
+      hint: partizipHint(v),
       tip: ppTip(v) + ` Auxiliar: <b>${v.aux}</b>.`,
     };
   }
@@ -63,6 +88,7 @@ const Drills = (() => {
       fields: [{ ph: "Präteritum" }],
       accept: [[v.praet]],
       solution: v.praet,
+      hint: praeteritumHint(v),
       tip: `<b>${v.inf} → ${v.praet} → ${v.pp}</b>. O Präteritum (Spalte 2) forma o passado simples; decore as três colunas juntas.`,
     };
   }
@@ -80,6 +106,7 @@ const Drills = (() => {
       fields: [{ ph: "haben/sein" }, { ph: "Partizip II" }],
       accept: [[b.aux], [b.pp]],
       solution: `${b.aux} … ${b.pp}`,
+      hint: perfektHint(b),
       tip: `Perfekt = <b>aux. (haben/sein) + Partizip II</b>. Aqui: ${auxRule}; Partizip II de <b>${b.inf}</b> = <b>${b.pp}</b>.`,
     };
   }
@@ -94,6 +121,7 @@ const Drills = (() => {
       fields: [{ ph: "forma conjugada" }],
       accept: [[b.form]],
       solution: b.form,
+      hint: praesensHint(b),
       tip: CHANGE_TIP[b.change] || "Atenção à mudança de vogal no singular.",
     };
   }
@@ -111,6 +139,7 @@ const Drills = (() => {
       answer: b.answer,
       accept: [[b.answer.join(" ")]],
       solution: b.answer.join(" "),
+      hint: TEKAMOLO_HINT,
       tip: `<b>Te–Ka–Mo–Lo</b>: ${b.note}`,
     };
   }

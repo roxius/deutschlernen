@@ -45,8 +45,16 @@
   <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
   <script>
+    // Offline/PWA cache desativado: o app sempre carrega da rede para evitar
+    // versões presas em cache no celular. Removemos qualquer service worker
+    // e cache que tenham ficado de versões anteriores.
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+      navigator.serviceWorker.getRegistrations()
+        .then(regs => regs.forEach(r => r.unregister()))
+        .catch(() => {});
+    }
+    if (window.caches && caches.keys) {
+      caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(() => {});
     }
   </script>
 </body>

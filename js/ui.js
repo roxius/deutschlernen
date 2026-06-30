@@ -171,14 +171,11 @@ const Drill = (() => {
           </div>
           <div class="bar"><div class="bar-fill" style="width:${(state.i / n) * 100}%"></div></div>
           <div class="quiz-q">${q.prompt}</div>
-          ${q.hint ? `<button class="hint-btn" id="hint-btn" type="button">💡 Dica</button>
-          <div class="quiz-hint" id="quiz-hint" hidden>${q.hint}</div>` : ""}
+          ${q.hint ? `<div class="quiz-hint">💡 ${q.hint}</div>` : ""}
           ${q.type === "tekamolo" ? blocksHtml(q) : fieldsHtml(q)}
           <button class="btn btn-primary" id="check">Verificar</button>
           <div class="quiz-feedback" id="dfb"></div>
         </section>`;
-      const hb = host.querySelector("#hint-btn");
-      if (hb) hb.addEventListener("click", () => { host.querySelector("#quiz-hint").hidden = false; hb.hidden = true; });
       if (q.type === "tekamolo") wireBlocks(q);
       else {
         const first = host.querySelector(".drill-input");
@@ -246,13 +243,12 @@ const Drill = (() => {
 
       host.querySelectorAll(".drill-input").forEach(inp => { inp.disabled = true; inp.classList.add(ok ? "is-correct" : "is-wrong"); });
       host.querySelectorAll("#pool .chip, #answer .chip").forEach(c => c.disabled = true);
-      const hb = host.querySelector("#hint-btn");
-      if (hb) hb.hidden = true; // a explicação/solução cobrem a partir daqui
       const fb = host.querySelector("#dfb");
       fb.innerHTML = `
         <div class="fb ${ok ? "fb-ok" : "fb-no"}">${ok ? "✓ Richtig!" : "✗ Falsch — você escreveu: <b>" + esc(given || "—") + "</b>"}</div>
         ${ok ? "" : `<div class="drill-solution">Resposta: <b>${esc(q.solution)}</b></div>`}
         ${q.tip ? `<div class="drill-tip">💡 ${q.tip}</div>` : ""}
+        ${q.exPast ? `<div class="drill-tip drill-past">A mesma frase no passado:${q.exPast}</div>` : ""}
         <button class="btn btn-primary" id="next-d">${state.i + 1 >= state.items.length ? "Ver resultado" : "Próxima →"}</button>`;
       host.querySelector("#check").disabled = true;
       host.querySelector("#next-d").addEventListener("click", () => { state.i++; state.answered = false; render(); });

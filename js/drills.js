@@ -50,6 +50,13 @@ const Drills = (() => {
     return ex.slice(0, max).map(([de, pt]) =>
       `<span class="hint-ex">📝 <i>${de}</i> <span class="muted">(${pt})</span></span>`).join("");
   }
+  // As MESMAS frases no passado (Perfekt/Präteritum), mostradas DEPOIS de responder.
+  function exPastHtml(inf, max = 2) {
+    const ex = (window.VERB_EX || {})[inf];
+    if (!ex || !ex.length) return "";
+    return ex.slice(0, max).filter(e => e[2]).map(([, pt, past]) =>
+      `<span class="hint-ex">⏳ <i>${past}</i> <span class="muted">(${pt})</span></span>`).join("");
+  }
 
   // Dicas mostradas ANTES de responder (opt-in): apontam o padrão + a forma "irmã"
   // (a outra coluna da tabela), sem imprimir a própria resposta.
@@ -83,6 +90,7 @@ const Drills = (() => {
       accept: [[v.pp]],
       solution: v.pp,
       hint: partizipHint(v),
+      exPast: exPastHtml(v.inf),
       tip: ppTip(v) + ` Auxiliar: <b>${v.aux}</b>.`,
     };
   }
@@ -97,6 +105,7 @@ const Drills = (() => {
       accept: [[v.praet]],
       solution: v.praet,
       hint: praeteritumHint(v),
+      exPast: exPastHtml(v.inf),
       tip: `<b>${v.inf} → ${v.praet} → ${v.pp}</b>. O Präteritum (Spalte 2) forma o passado simples; decore as três colunas juntas.`,
     };
   }
@@ -115,6 +124,7 @@ const Drills = (() => {
       accept: [[b.aux], [b.pp]],
       solution: `${b.aux} … ${b.pp}`,
       hint: perfektHint(b),
+      exPast: exPastHtml(b.inf, 1),
       tip: `Perfekt = <b>aux. (haben/sein) + Partizip II</b>. Aqui: ${auxRule}; Partizip II de <b>${b.inf}</b> = <b>${b.pp}</b>.`,
     };
   }
@@ -130,6 +140,7 @@ const Drills = (() => {
       accept: [[b.form]],
       solution: b.form,
       hint: praesensHint(b),
+      exPast: exPastHtml(b.inf, 1),
       tip: CHANGE_TIP[b.change] || "Atenção à mudança de vogal no singular.",
     };
   }

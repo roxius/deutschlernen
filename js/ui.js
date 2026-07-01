@@ -248,9 +248,10 @@ const Drill = (() => {
         <div class="fb ${ok ? "fb-ok" : "fb-no"}">${ok ? "✓ Richtig!" : "✗ Falsch — você escreveu: <b>" + esc(given || "—") + "</b>"}</div>
         ${ok ? "" : `<div class="drill-solution">Resposta: <b>${esc(q.solution)}</b></div>`}
         ${q.tip ? `<div class="drill-tip">💡 ${q.tip}</div>` : ""}
-        ${q.exPast ? `<div class="drill-tip drill-past">A mesma frase no passado:${q.exPast}</div>` : ""}
+        ${q.exPast ? `<div class="drill-tip drill-past"><b>No passado:</b>${q.exPast}</div>` : ""}
         <button class="btn btn-primary" id="next-d">${state.i + 1 >= state.items.length ? "Ver resultado" : "Próxima →"}</button>`;
-      host.querySelector("#check").disabled = true;
+      const cb = host.querySelector("#check");
+      if (cb) cb.style.display = "none"; // o status Richtig/Falsch ocupa o lugar do botão
       host.querySelector("#next-d").addEventListener("click", () => { state.i++; state.answered = false; render(); });
     }
 

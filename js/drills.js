@@ -41,6 +41,14 @@ const Drills = (() => {
     return "Verbo <b>forte/irregular</b>: Partizip II costuma terminar em <b>-en</b> com mudança de radical.";
   }
 
+  // Modais têm duas formas no Perfekt: nota do "Ersatzinfinitiv" (infinitivo substituto).
+  function modalNote(v) {
+    if (!(v.tags && v.tags.includes("modal"))) return "";
+    return ` <span class="drill-note">⚠️ <b>Modal:</b> use <b>${v.pp}</b> quando o modal é o verbo principal `
+      + `(<i>Ich habe das ${v.pp}</i>). Com um segundo verbo, ele vira o <b>Ersatzinfinitiv</b> = infinitivo `
+      + `<b>${v.inf}</b>: <i>Ich habe schwimmen <b>${v.inf}</b></i>.</span>`;
+  }
+
   function verbByInf(inf) { return (window.VERBS || []).find(v => v.inf === inf); }
 
   // Frases-exemplo (Präsens) que acompanham a dica, sem revelar a forma do passado.
@@ -64,16 +72,16 @@ const Drills = (() => {
     const padrao = v.sep ? "<b>separável</b> (prefixo + ge + radical)"
       : v.mixed ? "<b>misto</b> (radical muda + termina em <b>-t</b>)"
       : "<b>forte</b> (termina em <b>-en</b>, o radical pode mudar)";
-    return `É ${padrao}. Pista — Präteritum: <b>${v.praet}</b>. Auxiliar: <b>${v.aux}</b>.${exHtml(v.inf)}`;
+    return `É ${padrao}. Pista — Präteritum: <b>${v.praet}</b>. Auxiliar: <b>${v.aux}</b>.${exHtml(v.inf, 1)}`;
   }
   function praeteritumHint(v) {
     const padrao = v.mixed ? "verbo <b>misto</b>" : "verbo <b>forte</b>";
-    return `É ${padrao}. Pista — Partizip II: <b>${v.pp}</b>. A vogal do Präteritum costuma diferir do particípio.${exHtml(v.inf)}`;
+    return `É ${padrao}. Pista — Partizip II: <b>${v.pp}</b>. A vogal do Präteritum costuma diferir do particípio.${exHtml(v.inf, 1)}`;
   }
   function perfektHint(b) {
     const v = verbByInf(b.inf);
     const praetPista = v ? ` Präteritum de <b>${b.inf}</b>: <b>${v.praet}</b>.` : "";
-    return `Escolha o auxiliar: movimento/mudança de estado → <b>sein</b>; senão → <b>haben</b>.${praetPista}${exHtml(b.inf)}`;
+    return `Escolha o auxiliar: movimento/mudança de estado → <b>sein</b>; senão → <b>haben</b>.${praetPista}${exHtml(b.inf, 1)}`;
   }
   function praesensHint(b) {
     return `Verbo forte: a vogal muda <b>${b.change}</b> no du e er/sie/es; a terminação continua normal (du <b>-st</b>, er <b>-t</b>).${exHtml(b.inf, 1)}`;
@@ -90,8 +98,8 @@ const Drills = (() => {
       accept: [[v.pp]],
       solution: v.pp,
       hint: partizipHint(v),
-      exPast: exPastHtml(v.inf),
-      tip: ppTip(v) + ` Auxiliar: <b>${v.aux}</b>.`,
+      exPast: exPastHtml(v.inf, 1),
+      tip: ppTip(v) + ` Auxiliar: <b>${v.aux}</b>.` + modalNote(v),
     };
   }
 
@@ -105,7 +113,7 @@ const Drills = (() => {
       accept: [[v.praet]],
       solution: v.praet,
       hint: praeteritumHint(v),
-      exPast: exPastHtml(v.inf),
+      exPast: exPastHtml(v.inf, 1),
       tip: `<b>${v.inf} → ${v.praet} → ${v.pp}</b>. O Präteritum (Spalte 2) forma o passado simples; decore as três colunas juntas.`,
     };
   }

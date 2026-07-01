@@ -453,8 +453,7 @@ const App = (() => {
     const meta = window.Drills.types.find(t => t.key === type);
     if (!meta) return renderVerben();
     view().innerHTML = `
-      <header class="page-head"><a class="back" href="#/verben">‹ Verben</a><h1>${meta.icon} ${esc(meta.label)}</h1>
-        <p class="muted">${esc(meta.desc)}</p></header>
+      <header class="page-head page-head-compact"><a class="back" href="#/verben">‹ Verben</a><h1>${meta.icon} ${esc(meta.label)}</h1></header>
       <div id="drill-host"></div>`;
     Drill.mount($("#drill-host"), window.Drills.generate(type, 8), meta.label);
   }

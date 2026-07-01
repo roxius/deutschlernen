@@ -135,15 +135,15 @@ const Progress = (() => {
 
   // ---- Conquistas ----
   const ACHIEVEMENTS = [
-    { id: "first_lesson", icon: "🎯", title: "Primeiro passo", desc: "Conclua a sua primeira Lektion", test: () => completedCount() >= 1 },
-    { id: "a11_done", icon: "📗", title: "A1.1 completo", desc: "Conclua as Lektionen 1 a 6", test: () => [1,2,3,4,5,6].every(isLessonDone) },
-    { id: "a12_done", icon: "📘", title: "A1.2 completo", desc: "Conclua as Lektionen 7 a 12", test: () => [7,8,9,10,11,12].every(isLessonDone) },
-    { id: "all_done", icon: "🎓", title: "A1 completo!", desc: "Conclua todas as 12 Lektionen", test: () => completedCount() >= 12 },
-    { id: "streak_3", icon: "🔥", title: "Ofensiva de 3 dias", desc: "Estude 3 dias seguidos", test: () => state.bestStreak >= 3 },
-    { id: "streak_7", icon: "🔥", title: "Uma semana!", desc: "Estude 7 dias seguidos", test: () => state.bestStreak >= 7 },
-    { id: "xp_300", icon: "🚀", title: "300 XP", desc: "Alcance 300 pontos de experiência", test: () => state.xp >= 300 },
-    { id: "ex_50", icon: "🧠", title: "Treinador", desc: "Responda 50 exercícios", test: () => state.exerciseStats.answered >= 50 },
-    { id: "ex_100correct", icon: "💯", title: "100 acertos", desc: "Acerte 100 exercícios", test: () => state.exerciseStats.correct >= 100 },
+    { id: "first_lesson", icon: "🎯", title: { pt: "Primeiro passo", en: "First step" }, desc: { pt: "Conclua a sua primeira Lektion", en: "Complete your first Lektion" }, test: () => completedCount() >= 1 },
+    { id: "a11_done", icon: "📗", title: { pt: "A1.1 completo", en: "A1.1 complete" }, desc: { pt: "Conclua as Lektionen 1 a 6", en: "Complete Lektionen 1 to 6" }, test: () => [1,2,3,4,5,6].every(isLessonDone) },
+    { id: "a12_done", icon: "📘", title: { pt: "A1.2 completo", en: "A1.2 complete" }, desc: { pt: "Conclua as Lektionen 7 a 12", en: "Complete Lektionen 7 to 12" }, test: () => [7,8,9,10,11,12].every(isLessonDone) },
+    { id: "all_done", icon: "🎓", title: { pt: "A1 completo!", en: "A1 complete!" }, desc: { pt: "Conclua todas as 12 Lektionen", en: "Complete all 12 Lektionen" }, test: () => completedCount() >= 12 },
+    { id: "streak_3", icon: "🔥", title: { pt: "Ofensiva de 3 dias", en: "3-day streak" }, desc: { pt: "Estude 3 dias seguidos", en: "Study 3 days in a row" }, test: () => state.bestStreak >= 3 },
+    { id: "streak_7", icon: "🔥", title: { pt: "Uma semana!", en: "One week!" }, desc: { pt: "Estude 7 dias seguidos", en: "Study 7 days in a row" }, test: () => state.bestStreak >= 7 },
+    { id: "xp_300", icon: "🚀", title: { pt: "300 XP", en: "300 XP" }, desc: { pt: "Alcance 300 pontos de experiência", en: "Reach 300 experience points" }, test: () => state.xp >= 300 },
+    { id: "ex_50", icon: "🧠", title: { pt: "Treinador", en: "Trainer" }, desc: { pt: "Responda 50 exercícios", en: "Answer 50 exercises" }, test: () => state.exerciseStats.answered >= 50 },
+    { id: "ex_100correct", icon: "💯", title: { pt: "100 acertos", en: "100 correct" }, desc: { pt: "Acerte 100 exercícios", en: "Get 100 exercises right" }, test: () => state.exerciseStats.correct >= 100 },
   ];
 
   function checkAchievements() {

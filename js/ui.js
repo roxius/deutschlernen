@@ -7,7 +7,7 @@ const Quiz = (() => {
   function mount(host, lessonId, label, topic = null) {
     const questions = window.Exercises.generate(lessonId, 8, topic);
     if (!questions.length) {
-      host.innerHTML = `<section class="card"><p class="muted">Não há exercícios disponíveis aqui ainda.</p></section>`;
+      host.innerHTML = `<section class="card"><p class="muted">${t("Não há exercícios disponíveis aqui ainda.")}</p></section>`;
       return;
     }
     const state = { i: 0, correct: 0, questions, answered: false };
@@ -25,7 +25,7 @@ const Quiz = (() => {
           </div>
           <div class="bar"><div class="bar-fill" style="width:${(state.i / n) * 100}%"></div></div>
           <div class="quiz-q">${q.question}${q.sub ? `<span class="quiz-sub">${esc(q.sub)}</span>` : ""}</div>
-          ${q.hint ? `<button class="hint-btn" id="hint-btn" type="button">💡 Dica</button>
+          ${q.hint ? `<button class="hint-btn" id="hint-btn" type="button">${t("💡 Dica")}</button>
           <div class="quiz-hint" id="quiz-hint" hidden>${q.hint}</div>` : ""}
           <div class="quiz-opts">
             ${q.options.map((o, idx) => `<button class="opt" data-idx="${idx}">${esc(o)}</button>`).join("")}
@@ -57,9 +57,9 @@ const Quiz = (() => {
       const hb = host.querySelector("#hint-btn");
       if (hb) hb.hidden = true;
       const fb = host.querySelector("#qfb");
-      fb.innerHTML = `<div class="fb ${ok ? "fb-ok" : "fb-no"}">${ok ? "✓ Richtig!" : "✗ Falsch. Certo: <b>" + esc(q.answer) + "</b>"}</div>
+      fb.innerHTML = `<div class="fb ${ok ? "fb-ok" : "fb-no"}">${ok ? "✓ Richtig!" : "✗ Falsch. " + t("Certo: ") + "<b>" + esc(q.answer) + "</b>"}</div>
         ${q.explain ? `<div class="quiz-explain">💡 ${q.explain}</div>` : ""}
-        <button class="btn btn-primary" id="next-q">${state.i + 1 >= state.questions.length ? "Ver resultado" : "Próxima →"}</button>`;
+        <button class="btn btn-primary" id="next-q">${state.i + 1 >= state.questions.length ? t("Ver resultado") : t("Próxima →")}</button>`;
       host.querySelector("#next-q").addEventListener("click", () => { state.i++; state.answered = false; render(); });
     }
 
@@ -70,9 +70,9 @@ const Quiz = (() => {
       host.innerHTML = `
         <section class="card center">
           <p class="big">${pct >= 80 ? "🏆" : pct >= 50 ? "👍" : "📚"}</p>
-          <h2>${state.correct}/${n} corretas</h2>
+          <h2>${state.correct}/${n} ${t("corretas")}</h2>
           <p class="muted">${msg} · +${state.correct * 5} XP</p>
-          <button class="btn btn-primary" id="again">Jogar de novo</button>
+          <button class="btn btn-primary" id="again">${t("Jogar de novo")}</button>
         </section>`;
       host.querySelector("#again").addEventListener("click", () => mount(host, lessonId, label, topic));
     }
@@ -92,23 +92,23 @@ const Flashcards = (() => {
       const c = cards[state.i];
       host.innerHTML = `
         <section class="card center flash" id="flash">
-          <span class="muted">${state.i + 1}/${cards.length} · ${c.type === "mistake" ? "Erro comum" : c.type === "verb" ? "Verbo" : "Vocabulário L" + c.lektion}</span>
+          <span class="muted">${state.i + 1}/${cards.length} · ${c.type === "mistake" ? t("Erro comum") : c.type === "verb" ? t("Verbo") : t("Vocabulário L") + c.lektion}</span>
           <div class="flash-card ${state.flipped ? "is-flipped" : ""}" id="fcard">
             <div class="flash-face flash-front">
               ${c.hint ? `<span class="flash-hint">${esc(c.hint)}</span>` : ""}
               <span class="flash-text">${esc(c.front)}</span>
-              <span class="flash-tap">toque para virar</span>
+              <span class="flash-tap">${t("toque para virar")}</span>
             </div>
             <div class="flash-face flash-back">
               <span class="flash-text">${esc(c.back)}</span>
             </div>
           </div>
-          ${c.type !== "mistake" ? `<button class="speak-big" id="say">🔊 Ouvir</button>` : ""}
+          ${c.type !== "mistake" ? `<button class="speak-big" id="say">${t("🔊 Ouvir")}</button>` : ""}
           ${state.flipped ? `
             <div class="flash-actions">
-              <button class="btn btn-danger" id="again">Errei</button>
-              <button class="btn btn-done" id="got">Acertei</button>
-            </div>` : `<p class="muted small">Lembre-se da resposta e vire o card</p>`}
+              <button class="btn btn-danger" id="again">${t("Errei")}</button>
+              <button class="btn btn-done" id="got">${t("Acertei")}</button>
+            </div>` : `<p class="muted small">${t("Lembre-se da resposta e vire o card")}</p>`}
         </section>`;
 
       host.querySelector("#fcard").addEventListener("click", () => { state.flipped = !state.flipped; render(); });
@@ -139,9 +139,9 @@ const Flashcards = (() => {
       host.innerHTML = `
         <section class="card center">
           <p class="big">✅</p>
-          <h2>Revisão concluída!</h2>
-          <p class="muted">${state.reviewed} cards revisados · ${st.learned}/${st.total} dominados</p>
-          <a class="btn btn-primary" href="#/">Voltar ao início</a>
+          <h2>${t("Revisão concluída!")}</h2>
+          <p class="muted">${state.reviewed} ${t("cards revisados")} · ${st.learned}/${st.total} ${t("dominados")}</p>
+          <a class="btn btn-primary" href="#/">${t("Voltar ao início")}</a>
         </section>`;
     }
   }
@@ -153,7 +153,7 @@ const Flashcards = (() => {
 const Drill = (() => {
   function mount(host, items, label) {
     if (!items || !items.length) {
-      host.innerHTML = `<section class="card"><p class="muted">Sem exercícios aqui ainda.</p></section>`;
+      host.innerHTML = `<section class="card"><p class="muted">${t("Sem exercícios aqui ainda.")}</p></section>`;
       return;
     }
     const state = { i: 0, correct: 0, answered: false, items };
@@ -166,14 +166,14 @@ const Drill = (() => {
       host.innerHTML = `
         <section class="card drill">
           <div class="quiz-top">
-            <span class="muted">${esc(label || "Treino")}</span>
+            <span class="muted">${esc(label || t("Treino"))}</span>
             <span class="muted">${state.i + 1}/${n}</span>
           </div>
           <div class="bar"><div class="bar-fill" style="width:${(state.i / n) * 100}%"></div></div>
           <div class="quiz-q">${q.prompt}</div>
           ${q.hint ? `<div class="quiz-hint">💡 ${q.hint}</div>` : ""}
           ${q.type === "tekamolo" ? blocksHtml(q) : fieldsHtml(q)}
-          <button class="btn btn-primary" id="check">Verificar</button>
+          <button class="btn btn-primary" id="check">${t("Verificar")}</button>
           <div class="quiz-feedback" id="dfb"></div>
         </section>`;
       if (q.type === "tekamolo") wireBlocks(q);
@@ -190,13 +190,13 @@ const Drill = (() => {
       return `<div class="drill-blanks">${q.fields.map((f, i) =>
         `<input class="drill-input" data-i="${i}" type="text" inputmode="text"
           autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
-          placeholder="${esc(f.ph || "")}" aria-label="${esc(f.ph || "resposta")}" />`).join("")}</div>`;
+          placeholder="${esc(f.ph || "")}" aria-label="${esc(f.ph || t("resposta"))}" />`).join("")}</div>`;
     }
 
     // TeKaMoLo: blocos clicáveis montam a frase na ordem escolhida
     function blocksHtml(q) {
       return `
-        <div class="drill-answer" id="answer" aria-label="Sua frase"></div>
+        <div class="drill-answer" id="answer" aria-label="${t("Sua frase")}"></div>
         <div class="drill-chips" id="pool">
           ${q.blocks.map((b, i) => `<button class="chip" data-i="${i}" type="button">${esc(b)}</button>`).join("")}
         </div>`;
@@ -245,11 +245,11 @@ const Drill = (() => {
       host.querySelectorAll("#pool .chip, #answer .chip").forEach(c => c.disabled = true);
       const fb = host.querySelector("#dfb");
       fb.innerHTML = `
-        <div class="fb ${ok ? "fb-ok" : "fb-no"}">${ok ? "✓ Richtig!" : "✗ Falsch — você escreveu: <b>" + esc(given || "—") + "</b>"}</div>
-        ${ok ? "" : `<div class="drill-solution">Resposta: <b>${esc(q.solution)}</b></div>`}
+        <div class="fb ${ok ? "fb-ok" : "fb-no"}">${ok ? "✓ Richtig!" : "✗ Falsch — " + t("você escreveu: ") + "<b>" + esc(given || "—") + "</b>"}</div>
+        ${ok ? "" : `<div class="drill-solution">${t("Resposta: ")}<b>${esc(q.solution)}</b></div>`}
         ${q.tip ? `<div class="drill-tip">💡 ${q.tip}</div>` : ""}
-        ${q.exPast ? `<div class="drill-tip drill-past"><b>No passado:</b>${q.exPast}</div>` : ""}
-        <button class="btn btn-primary" id="next-d">${state.i + 1 >= state.items.length ? "Ver resultado" : "Próxima →"}</button>`;
+        ${q.exPast ? `<div class="drill-tip drill-past"><b>${t("No passado:")}</b>${q.exPast}</div>` : ""}
+        <button class="btn btn-primary" id="next-d">${state.i + 1 >= state.items.length ? t("Ver resultado") : t("Próxima →")}</button>`;
       const cb = host.querySelector("#check");
       if (cb) cb.style.display = "none"; // o status Richtig/Falsch ocupa o lugar do botão
       host.querySelector("#next-d").addEventListener("click", () => { state.i++; state.answered = false; render(); });
@@ -262,9 +262,9 @@ const Drill = (() => {
       host.innerHTML = `
         <section class="card center">
           <p class="big">${pct >= 80 ? "🏆" : pct >= 50 ? "👍" : "📚"}</p>
-          <h2>${state.correct}/${n} corretas</h2>
+          <h2>${state.correct}/${n} ${t("corretas")}</h2>
           <p class="muted">${msg} · +${state.correct * 5} XP</p>
-          <button class="btn btn-primary" id="again">Treinar de novo</button>
+          <button class="btn btn-primary" id="again">${t("Treinar de novo")}</button>
         </section>`;
       host.querySelector("#again").addEventListener("click", () => mount(host, window.Drills.generate(state.items[0].type, n), label));
     }

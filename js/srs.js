@@ -24,34 +24,28 @@ const SRS = (() => {
     return d.toISOString().slice(0, 10);
   }
 
-  // Semeia o deck a partir de todo o vocabulário + erros comuns (idempotente)
+  // Semeia o deck (idempotente). Também ATUALIZA os textos (front/back/hint) para o
+  // idioma atual em cards já existentes, preservando box/due — assim, ao trocar o
+  // idioma, a Revisão passa a mostrar o texto no idioma novo.
   function seed() {
     const { LESSONS, COMMON_MISTAKES } = window.DATA;
+    const upsert = (id, base, fields) => {
+      deck[id] = Object.assign(deck[id] || { box: 1, due: today() }, base, fields);
+    };
     LESSONS.forEach(les => {
       (les.vocab || []).forEach(v => {
-        const id = "v:" + les.id + ":" + v.de;
-        if (!deck[id]) {
-          deck[id] = { box: 1, due: today(), front: v.de, back: v.pt, hint: v.art, lektion: les.id, type: "vocab" };
-        }
+        upsert("v:" + les.id + ":" + v.de, { lektion: les.id, type: "vocab", hint: v.art },
+          { front: v.de, back: window.mean(v) });
       });
     });
     COMMON_MISTAKES.forEach((m, i) => {
-      const id = "m:" + i;
-      if (!deck[id]) {
-        deck[id] = { box: 1, due: today(), front: "❌ " + m.errado, back: "✅ " + m.certo, hint: m.titulo, lektion: m.lektion, type: "mistake" };
-      }
+      upsert("m:" + i, { lektion: m.lektion, type: "mistake", hint: window.tr(m.titulo) },
+        { front: "❌ " + window.tr(m.errado), back: "✅ " + window.tr(m.certo) });
     });
     // Verbos das notas da Nadine (Infinitiv → Präteritum + Partizip II)
     (window.VERBS || []).forEach(v => {
-      const id = "vb:" + v.inf;
-      if (!deck[id]) {
-        deck[id] = {
-          box: 1, due: today(), type: "verb",
-          front: v.inf + " (" + v.pt + ")",
-          back: "Prät.: " + v.praet + " · Part. II: " + v.pp + " · (" + v.aux + ")",
-          hint: v.change || (v.mixed ? "forma mista" : v.aux),
-        };
-      }
+      upsert("vb:" + v.inf, { type: "verb", hint: v.change || (v.mixed ? (window.Lang.get() === "en" ? "mixed form" : "forma mista") : v.aux) },
+        { front: v.inf + " (" + window.mean(v) + ")", back: "Prät.: " + v.praet + " · Part. II: " + v.pp + " · (" + v.aux + ")" });
     });
     save();
   }
